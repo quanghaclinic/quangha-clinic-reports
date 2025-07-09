@@ -171,45 +171,45 @@
     }
 
     // Hàm render đơn thuốc
-    function renderPrescriptions(prescriptions) {
-      const tbody = document.getElementById('prescriptions-body');
-      tbody.innerHTML = '';
-      
-      if (prescriptions && prescriptions.length > 0) {
-        prescriptions.forEach((item, index) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${item.tenThuoc || item['Tên thuốc'] || ''}</td>
-            <td>${item.dvt || item['ĐVT'] || ''}</td>
-            <td>${item.soLuong || item['Số lượng'] || ''}</td>
-            <td>${item.cachDung || item['Cách dùng'] || ''}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>';
-      }
-    }
+   function renderPrescriptions(prescriptions) {
+  const tbody = document.getElementById('prescriptions-body');
+  tbody.innerHTML = '';
+  
+  if (prescriptions && prescriptions.length > 0) {
+    prescriptions.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${item['Tên thuốc'] || ''}</td>
+        <td>${item['ĐVT'] || ''}</td>
+        <td>${item['Số lượng'] || ''}</td>
+        <td>${item['Cách sử dụng'] || ''}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } else {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>';
+  }
+}
 
     // Hàm render thủ thuật
-    function renderProcedures(procedures) {
-      const tbody = document.getElementById('procedures-body');
-      tbody.innerHTML = '';
-      
-      if (procedures && procedures.length > 0) {
-        procedures.forEach((item, index) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${item.tenThuThu || item['Tên thủ thuật'] || ''}</td>
-            <td>${item.ghiChu || item['Ghi chú'] || ''}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      } else {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Không có thủ thuật</td></tr>';
-      }
-    }
+   function renderProcedures(procedures) {
+  const tbody = document.getElementById('procedures-body');
+  tbody.innerHTML = '';
+  
+  if (procedures && procedures.length > 0) {
+    procedures.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item['Tên thủ thuật'] || ''}</td>
+        <td>${item['Ghi chú'] || ''}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } else {
+    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Không có thủ thuật</td></tr>';
+  }
+}
 
     // Hàm chính tải dữ liệu và render phiếu
     function loadMedicalReport() {
