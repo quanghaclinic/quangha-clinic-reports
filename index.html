@@ -100,10 +100,35 @@
   <div id="exam-results"></div>
   
   <!-- Đơn thuốc sẽ được điền bằng JavaScript -->
-  <div id="prescriptions"></div>
+  <div id="prescriptions-section">
+    <div class="info-label">Đơn thuốc:</div>
+    <table id="prescriptions-table">
+      <thead>
+        <tr>
+          <th width="5%">STT</th>
+          <th width="30%">Tên thuốc</th>
+          <th width="10%">ĐVT</th>
+          <th width="10%">Số lượng</th>
+          <th width="45%">Cách sử dụng</th>
+        </tr>
+      </thead>
+      <tbody id="prescriptions-body"></tbody>
+    </table>
+  </div>
   
   <!-- Thủ thuật sẽ được điền bằng JavaScript -->
-  <div id="procedures"></div>
+  <div id="procedures-section">
+    <div class="info-label">Thủ thuật:</div>
+    <table id="procedures-table">
+      <thead>
+        <tr>
+          <th width="30%">Tên thủ thuật</th>
+          <th width="70%">Ghi chú</th>
+        </tr>
+      </thead>
+      <tbody id="procedures-body"></tbody>
+    </table>
+  </div>
 
   <div class="doctor-sign">
     <div>BÁC SĨ ĐIỀU TRỊ</div>
@@ -119,6 +144,17 @@
       return urlParams.get(name);
     }
 
+    // Hàm parse dữ liệu JSON từ URL
+    function parseUrlJsonParam(param) {
+      try {
+        const decoded = decodeURIComponent(param || '');
+        return decoded ? JSON.parse(decoded) : null;
+      } catch (e) {
+        console.error('Lỗi phân tích JSON:', e);
+        return null;
+      }
+    }
+
     // Hàm định dạng ngày tháng
     function formatDate(dateString) {
       if (!dateString) return '';
@@ -126,11 +162,52 @@
       try {
         const parts = dateString.split('/');
         if (parts.length === 3) {
-          return `${parts[1]}/${parts[0]}/${parts[2]}`;
+          return `${parts[0]}/${parts[1]}/${parts[2]}`;
         }
         return dateString;
       } catch {
         return dateString;
+      }
+    }
+
+    // Hàm render đơn thuốc
+    function renderPrescriptions(prescriptions) {
+      const tbody = document.getElementById('prescriptions-body');
+      tbody.innerHTML = '';
+      
+      if (prescriptions && prescriptions.length > 0) {
+        prescriptions.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.tenThuoc || item['Tên thuốc'] || ''}</td>
+            <td>${item.dvt || item['ĐVT'] || ''}</td>
+            <td>${item.soLuong || item['Số lượng'] || ''}</td>
+            <td>${item.cachDung || item['Cách dùng'] || ''}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>';
+      }
+    }
+
+    // Hàm render thủ thuật
+    function renderProcedures(procedures) {
+      const tbody = document.getElementById('procedures-body');
+      tbody.innerHTML = '';
+      
+      if (procedures && procedures.length > 0) {
+        procedures.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.tenThuThu || item['Tên thủ thuật'] || ''}</td>
+            <td>${item.ghiChu || item['Ghi chú'] || ''}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Không có thủ thuật</td></tr>';
       }
     }
 
@@ -151,7 +228,9 @@
         chandoan: getUrlParam('chandoan') || '',
         kinh: getUrlParam('kinh') || '',
         khamlai_sau: getUrlParam('khamlai_sau') || '',
-        idkh: getUrlParam('idkh') || ''
+        idkh: getUrlParam('idkh') || '',
+        donthuoc: parseUrlJsonParam(getUrlParam('donthuoc')),
+        thuthuat: parseUrlJsonParam(getUrlParam('thuthuat'))
       };
 
       // Hiển thị ngày khám
@@ -217,39 +296,15 @@
         </div>
       `;
 
-      // Render đơn thuốc (cần truyền qua URL)
-      const prescriptions = [];
-      document.getElementById('prescriptions').innerHTML = `
-        <div class="info-label">Đơn thuốc:</div>
-        <table>
-          <thead>
-            <tr>
-              <th width="5%">STT</th>
-              <th width="30%">Tên thuốc</th>
-              <th width="10%">ĐVT</th>
-              <th width="10%">Số lượng</th>
-              <th width="45%">Cách sử dụng</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${prescriptions.length > 0 ? 
-              prescriptions.map((item, index) => `
-                <tr>
-                  <td>${index + 1}</td>
-                  <td>${item.tenThuoc}</td>
-                  <td>${item.dvt}</td>
-                  <td>${item.soLuong}</td>
-                  <td>${item.cachDung}</td>
-                </tr>
-              `).join('') : 
-              `<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>`}
-          </tbody>
-        </table>
-      `;
+      // Render đơn thuốc
+      renderPrescriptions(data.donthuoc);
+      
+      // Render thủ thuật
+      renderProcedures(data.thuthuat);
 
       // Tự động in nếu có tham số autoprint
       if (getUrlParam('autoprint') === '1') {
-        window.print();
+        setTimeout(() => window.print(), 500);
       }
     }
 
