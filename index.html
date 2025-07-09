@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phiếu Khám Bệnh - Phòng Khám Mắt Quang Hà</title>
   <style>
-    /* CSS chung */
     body {
       font-family: 'Times New Roman', serif;
       margin: 0;
@@ -93,13 +92,9 @@
     <div id="ngay-kham" style="text-align: right;"></div>
   </div>
 
-  <!-- Thông tin bệnh nhân sẽ được điền bằng JavaScript -->
   <div id="patient-info"></div>
-  
-  <!-- Kết quả khám sẽ được điền bằng JavaScript -->
   <div id="exam-results"></div>
   
-  <!-- Đơn thuốc sẽ được điền bằng JavaScript -->
   <div id="prescriptions-section">
     <div class="info-label">Đơn thuốc:</div>
     <table id="prescriptions-table">
@@ -116,7 +111,6 @@
     </table>
   </div>
   
-  <!-- Thủ thuật sẽ được điền bằng JavaScript -->
   <div id="procedures-section">
     <div class="info-label">Thủ thuật:</div>
     <table id="procedures-table">
@@ -147,8 +141,9 @@
     // Hàm parse dữ liệu JSON từ URL
     function parseUrlJsonParam(param) {
       try {
-        const decoded = decodeURIComponent(param || '');
-        return decoded ? JSON.parse(decoded) : null;
+        if (!param) return null;
+        const decoded = decodeURIComponent(param);
+        return JSON.parse(decoded);
       } catch (e) {
         console.error('Lỗi phân tích JSON:', e);
         return null;
@@ -158,58 +153,55 @@
     // Hàm định dạng ngày tháng
     function formatDate(dateString) {
       if (!dateString) return '';
-      
       try {
-        const parts = dateString.split('/');
-        if (parts.length === 3) {
-          return `${parts[0]}/${parts[1]}/${parts[2]}`;
-        }
-        return dateString;
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        return date.toLocaleDateString('vi-VN');
       } catch {
         return dateString;
       }
     }
 
     // Hàm render đơn thuốc
-   function renderPrescriptions(prescriptions) {
-  const tbody = document.getElementById('prescriptions-body');
-  tbody.innerHTML = '';
-  
-  if (prescriptions && prescriptions.length > 0) {
-    prescriptions.forEach((item, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${item['Tên thuốc'] || ''}</td>
-        <td>${item['ĐVT'] || ''}</td>
-        <td>${item['Số lượng'] || ''}</td>
-        <td>${item['Cách sử dụng'] || ''}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  } else {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>';
-  }
-}
+    function renderPrescriptions(prescriptions) {
+      const tbody = document.getElementById('prescriptions-body');
+      tbody.innerHTML = '';
+      
+      if (prescriptions && prescriptions.length > 0) {
+        prescriptions.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item['Tên thuốc'] || item['Tên thuốc'] || ''}</td>
+            <td>${item['ĐVT'] || item['ĐVT'] || ''}</td>
+            <td>${item['Số lượng'] || item['Số lượng'] || ''}</td>
+            <td>${item['Cách sử dụng'] || item['Cách sử dụng'] || ''}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Không có đơn thuốc</td></tr>';
+      }
+    }
 
     // Hàm render thủ thuật
-   function renderProcedures(procedures) {
-  const tbody = document.getElementById('procedures-body');
-  tbody.innerHTML = '';
-  
-  if (procedures && procedures.length > 0) {
-    procedures.forEach((item, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${item['Tên thủ thuật'] || ''}</td>
-        <td>${item['Ghi chú'] || ''}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  } else {
-    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Không có thủ thuật</td></tr>';
-  }
-}
+    function renderProcedures(procedures) {
+      const tbody = document.getElementById('procedures-body');
+      tbody.innerHTML = '';
+      
+      if (procedures && procedures.length > 0) {
+        procedures.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item['Tên thủ thuật'] || item['Tên thủ thuật'] || ''}</td>
+            <td>${item['Ghi chú'] || item['Ghi chú'] || ''}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Không có thủ thuật</td></tr>';
+      }
+    }
 
     // Hàm chính tải dữ liệu và render phiếu
     function loadMedicalReport() {
@@ -233,10 +225,10 @@
         thuthuat: parseUrlJsonParam(getUrlParam('thuthuat'))
       };
 
+      console.log('Dữ liệu nhận được:', data); // Debug
+
       // Hiển thị ngày khám
-      if (data.ngaykham) {
-        document.getElementById('ngay-kham').textContent = `Ngày khám: ${data.ngaykham}`;
-      }
+      document.getElementById('ngay-kham').textContent = `Ngày khám: ${data.ngaykham}`;
 
       // Render thông tin bệnh nhân
       document.getElementById('patient-info').innerHTML = `
@@ -296,11 +288,19 @@
         </div>
       `;
 
-      // Render đơn thuốc
-      renderPrescriptions(data.donthuoc);
+      // Xử lý đơn thuốc
+      let donthuoc = data.donthuoc;
+      if (donthuoc && !Array.isArray(donthuoc)) {
+        donthuoc = [donthuoc];
+      }
+      renderPrescriptions(donthuoc);
       
-      // Render thủ thuật
-      renderProcedures(data.thuthuat);
+      // Xử lý thủ thuật
+      let thuthuat = data.thuthuat;
+      if (thuthuat && !Array.isArray(thuthuat)) {
+        thuthuat = [thuthuat];
+      }
+      renderProcedures(thuthuat);
 
       // Tự động in nếu có tham số autoprint
       if (getUrlParam('autoprint') === '1') {
